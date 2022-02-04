@@ -1,4 +1,5 @@
 Export,Date,Total,Customer,Amount
+"CSV File",2022-02-04,60,Customer1,50
+"CSV File",,,Customer1,10
 "CSV File",2022-01-31,150,Customer2,150
-"CSV File",2022-01-26,210,Customer1,200
-"CSV File",,,Customer2,10
+"CSV File",2022-01-26,10,Customer2,10
