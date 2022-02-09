@@ -189,6 +189,8 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/','SaleController@weekelySales')->name('sale.index');
             Route::get('/getplannedPayments','SaleController@getplannedPayments')->name('getplannedPayments');
             Route::get('/getplannedcsv','SaleController@getplannedcsv')->name('getplannedcsv');
+            Route::get('/getplannedcsvbydate/{date}','SaleController@getplannedcsvByDate')->name('getplannedcsvbydate');
+            Route::post('/getplannedcsvformbydate','SaleController@getplannedcsvFormByDate')->name('getplannedcsvformbydate');
             Route::get('/get-csv/{start}/{end}','SaleController@getCsv')->name('sale.csv');
             Route::get('/get-csv-blade','SaleController@index')->name('sale.csvblade');
             Route::get('/reverse_payment/{customer?}/{date?}','SaleController@reverse_payment')->name('reverse_payment');

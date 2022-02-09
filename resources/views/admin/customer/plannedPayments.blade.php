@@ -23,12 +23,49 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">
-                                Planned Payments List (Total Report's : <span id="countTotal">0</span>)
-                            </h3>
-                            <h3>
-                                <a href="{{route('getplannedcsv')}}" class="button btn-lg btn-success ml-5">Export CSV</a>
-                            </h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3 class="card-title mt-2">
+                                        Planned Payments List (Total Report's : <span id="countTotal">0</span>)
+                                    </h3>
+                                    <h3>
+                                        <a href="{{route('getplannedcsv')}}" class="button btn btn-success ml-3 mt-1">Export CSV All</a>
+                                    </h3>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h3 class="card-title mt-2">Download By Date</h3>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <form action="{{ route('getplannedcsvformbydate') }}" method="POST">
+                                                @csrf
+                                                <div class="row">
+                                                    <div class="col-md-8">
+                                                        <select class="form-control mt-2" name="date" >
+                                                            <option value="">Select Date</option>
+                                                            @foreach($plannedPayments as $pp)
+                                                            <option value="{{ $pp->date }}">{{ $pp->date }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="submit" value="Export" class="button btn btn-success mt-2">
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            @if(session()->has('status'))
+                                                <div class="alert alert-light alert-dismissible fade show" role="alert">
+                                                    <span class="p-3 my-3">{{session()->get('status')}}</span>
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        </div>   
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body">
