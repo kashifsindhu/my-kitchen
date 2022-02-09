@@ -12,5 +12,5 @@ class GroupCustomer extends Model
         'group_name',
         'status',
     ];
-    public $timestamps=true;
+    public $timestamps = true;
 }

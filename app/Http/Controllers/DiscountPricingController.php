@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiscountPricing;
 use Illuminate\Http\Request;
 
 class DiscountPricingController extends Controller
@@ -13,7 +14,10 @@ class DiscountPricingController extends Controller
      */
     public function index()
     {
-        return view('admin.discountpricing.index');
+
+        $data = DiscountPricing::with('group', 'product')->get();
+        // dd($data);
+        return view('admin.discountpricing.index', compact('data'));
     }
 
     /**
@@ -23,7 +27,7 @@ class DiscountPricingController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.discountpricing.create');
     }
 
     /**
@@ -34,7 +38,8 @@ class DiscountPricingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        DiscountPricing::create($request->all());
+        return redirect(route('discountpricing.index'));
     }
 
     /**
@@ -79,6 +84,9 @@ class DiscountPricingController extends Controller
      */
     public function destroy($id)
     {
-        //
+        // dd($id);
+        $data = DiscountPricing::find($id);
+        $data->delete();
+        return redirect(route('discountpricing.index'));
     }
 }
