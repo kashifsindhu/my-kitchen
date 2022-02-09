@@ -74,6 +74,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/customer-purchasing/{id}','AdminController@purchasingHistory')->name('customerPurchasing');
         Route::get('/allocate-payment/{id}/{name}/{qnty}/{start}/{end}','AdminController@allocatePayment')->name('allocatePayment');
         Route::post('/saveAllocatePayment','AdminController@saveAllocatePayment')->name('saveAllocatePayment');
+        Route::resource('discountpricing','DiscountPricingController');
         
         Route::group(['as' => 'admin.','middleware' => ['role:Admin']], function () {
             Route::match(['get', 'post'], '/setting', 'AdminController@setting')->name('setting');
