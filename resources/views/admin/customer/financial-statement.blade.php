@@ -83,7 +83,7 @@
                                         {{-$p->amount}}
                                         </td>
                                         <td>
-                                            <a href="#" class="button bt-danger" data-time="{{date($p->updated_at->format('H:i:s'))}}"  data-date="{{date($p->updated_at->format('Y-m-d'))}}" data-customer ="{{$id}}">Reversal</a>
+                                            <a href="#" class="button2 bt-danger" data-time="{{date($p->updated_at->format('H:i:s'))}}"  data-date="{{date($p->updated_at->format('Y-m-d'))}}" data-customer ="{{$id}}">Reversal</a>
                                         </td>
                                     
                                     </tr>
@@ -128,16 +128,16 @@
                               Add Planned Payment                       
                                 </td>
                                 <form id="planned_payment" method="POST">
-                                <td>
-                                    <input type="hidden" name="customer_id" value="{{$id}}">
-                                    <input type="date" name="date" id="planned_date" min="{{date('Y-m-d h:i')}}" required>
-                                </td>
-                                <td>
-                                  <input type="number" name="amount" id="amount" required>
-                                </td>
-                                <td>
-                                <input type="submit" class="button bt-success" value="submit">
-                                </td> 
+                                    <td>
+                                        <input type="hidden" name="customer_id" value="{{$id}}">
+                                        <input type="date" name="date" id="planned_date" min="{{date('Y-m-d h:i')}}" required>
+                                    </td>
+                                    <td>
+                                    <input type="number" name="amount" id="amount" required>
+                                    </td>
+                                    <td>
+                                    <input type="submit" class="button bt-success" value="submit">
+                                    </td> 
                                 </form>
                             </tr>
                             <tr>   
@@ -188,13 +188,12 @@
                     });
                  //Payment Reversal Functionality
                 
-                $("body").on("click", ".button", function ()
+                $("body").on("click", ".button2", function ()
                 {
                     let amount = $(this).attr('data-amount');
                     let time = $(this).attr('data-time');
                     let date = $(this).attr('data-date');
                     let customer = $(this).attr('data-customer');
-                    $("#pp_reload").html("");
                     $.ajax({
                         method: "GET",
                         url: '{{ route("reverse_payment")}}',
@@ -215,7 +214,7 @@
                                     icon: 'success',
                                     title: response.success,
                                 });
-                                $("#pp_reload").load(location.href + " #pp_reload");
+                                location.reload();
                             }
                         },
                     }); 

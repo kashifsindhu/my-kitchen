@@ -1,4 +1,6 @@
-Export,Date,Total,Customer,Amount
-"CSV File",2022-01-31,150,Customer2,150
-"CSV File",2022-01-26,210,Customer1,200
-"CSV File",,,Customer2,10
+"Record Type ","Other Party Bank Account Number","Transaction code","Transaction Date","Transaction Amount","Other Party Name","Other Party Code","Other Party Reference","Other Party Alpha Reference","Your Name","Your Code","Your Reference","Your Particulars"
+1,,,,,12345,6,50929,50923,,12345,,
+2,,0,2022-02-08,50,Customer1,,"Monthly DD",,"ACME INC",,"Monthly DD",
+2,,0,,100,Customer1,,"Monthly DD",,"ACME INC",,"Monthly DD",
+2,123,0,,10,Customer2,,"Monthly DD",,"ACME INC",,"Monthly DD",
+3,12345,3,,160,,,,,,,,

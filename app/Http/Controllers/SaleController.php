@@ -138,10 +138,16 @@ class SaleController extends Controller
                 $name = User::where('id',$row->customer_id)->first()->name;
                 return $name;
             })
-            ->rawColumns(['name'])
+            ->addColumn('date', function ($plannedPayments) {
+                
+                return '<a href="'.route('getplannedcsvbydate',$plannedPayments->date).'">'. $plannedPayments->date .'</a>';
+            })
+            ->rawColumns(['name','date'])
             ->make('true');
         }
-         return view('admin.customer.plannedPayments');
+
+        $plannedPayments=DB::table('planned_payments')->select('date')->distinct()->get();
+        return view('admin.customer.plannedPayments', compact('plannedPayments'));
     }
 
         //  fputcsv($handle, [   
@@ -165,7 +171,8 @@ class SaleController extends Controller
         //     ]);
 
         // }
-    public function getCsv($start,$end){
+    public function getCsv($start,$end)
+    {
         $startDate=$start;
         $endDate=$end;
             $products = Product::all();
@@ -367,14 +374,9 @@ class SaleController extends Controller
                
       return view('admin.customer.customerOwingReport',compact('supper'));
     }
+
     public function getplannedcsv()
     {
-        // $plannedPayments=PlannedPayment::orderBy('date','desc')->groupBy(function($data){
-        //     return $data->date;
-        // })->get();
-        // dd($plannedPayments);
-      
-        //   dd("hjdjd");
         $headers = array(
             'Content-Type' => 'application/vnd.ms-excel; charset=utf-8',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
@@ -382,7 +384,6 @@ class SaleController extends Controller
             'Expires' => '0',
             'Pragma' => 'public',
         );
-
 
         //I am storing the csv file in public >> files folder. So that why I am creating files folder
         if (!File::exists(public_path()."/files")) {
@@ -395,49 +396,338 @@ class SaleController extends Controller
 
         //adding the first row
         fputcsv($handle, [
-            "Export",
-            "Date",
-            'Total',
-            'Customer',
-            'Amount',
+            "Record Type ",
+            "Other Party Bank Account Number",
+            'Transaction code',
+            'Transaction Date',
+            'Transaction Amount',
+            'Other Party Name',
+            'Other Party Code',
+            'Other Party Reference',
+            'Other Party Alpha Reference',
+            'Your Name',
+            'Your Code',
+            'Your Reference',
+            'Your Particulars',
+        ]);
+        fputcsv($handle, [
+            1,
+            '',
+            '',
+            '',
+            '',
+            Setting::where('name','Debit_Authority_Number')->first()->value,
+            6,
+            50929,
+            '50923',
+             '',
+             Setting::where('name','Debit_Authority_Number')->first()->value,
+             '',
+             '',
+        ]);
+        $total =0;
+        $count =0;
+        //adding the data from the array
+        
+        
+        $plannedPayments= DB::table('planned_payments')->select(DB::raw('sum(amount) as amount'),'date')
+        ->groupBy('date')->orderBy('date','desc')->get()->toArray();
+        //dump($plannedPayments);
+        $array1 =array();
+            foreach ($plannedPayments as $st) {
+                $planned=PlannedPayment::where('date',$st->date)->get()->toArray();
+                    //dump($planned);
+                    foreach($planned as $key => $value) 
+                    {
+                        $count +=1;
+                        $name=User::where('id',$value['customer_id'])->first()->name;
+                        $user_an=User::where('id',$value['customer_id'])->first()->account_number;
+                        $user_atn=User::where('id',$value['customer_id'])->first()->athority_number;
+                        
+                        if(!in_array($st->date,$array1))
+                        {
+                            array_push($array1,$st->date);
+                        }
+                        else
+                        {
+                            $st->date='';
+                            $st->amount='';
+                        }
+                        fputcsv($handle, [
+                            2,
+                            $user_an,
+                            00,
+                            $st->date,
+                            $value['amount'],
+                            $name,
+                            $user_atn,
+                            'Monthly DD',
+                            '',
+                            'ACME INC',
+                            '',
+                            'Monthly DD',
+                            "",
+                        ]);     
+                        $total += $value['amount'];        
+                    }   
+            }     
+            fputcsv($handle, [
+                3,
+                Setting::where('name','Debit_Authority_Number')->first()->value,
+                $count,
+                '',
+                $total,
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+            ]);
+            fclose($handle);
+
+            //download command
+            return Response::download($filename, "download.csv", $headers);
+    }
+
+    public function getplannedcsvByDate($date)
+    {
+        $headers = array(
+            'Content-Type' => 'application/vnd.ms-excel; charset=utf-8',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Content-Disposition' => 'attachment; filename=download.csv',
+            'Expires' => '0',
+            'Pragma' => 'public',
+        );
+
+        //I am storing the csv file in public >> files folder. So that why I am creating files folder
+        if (!File::exists(public_path()."/files")) {
+            File::makeDirectory(public_path() . "/files");
+        }
+
+        //creating the download file
+        $filename =  public_path("files/download.csv");
+        $handle = fopen($filename, 'w');
+
+        //adding the first row
+        fputcsv($handle, [
+            "Record Type ",
+            "Other Party Bank Account Number",
+            'Transaction code',
+            'Transaction Date',
+            'Transaction Amount',
+            'Other Party Name',
+            'Other Party Code',
+            'Other Party Reference',
+            'Other Party Alpha Reference',
+            'Your Name',
+            'Your Code',
+            'Your Reference',
+            'Your Particulars',
+        ]);
+        fputcsv($handle, [
+            1,
+            '',
+            '',
+            '',
+            '',
+            Setting::where('name','Debit_Authority_Number')->first()->value,
+            6,
+            50929,
+            '50923',
+             '',
+             Setting::where('name','Debit_Authority_Number')->first()->value,
+             '',
+             '',
         ]);
         $total =0;
         $count =0;
         //adding the data from the array
         
         $plannedPayments= DB::table('planned_payments')->select(DB::raw('sum(amount) as amount'),'date')
-        ->groupBy('date')->orderBy('date','desc')->get()->toArray();
+        ->groupBy('date')->orderBy('date','desc')->where('date',$date)->get()->toArray();
         //dump($plannedPayments);
         $array1 =array();
-        foreach ($plannedPayments as $st) {
-            $planned=PlannedPayment::where('date',$st->date)->get()->toArray();
-                //dump($planned);
-                foreach($planned as $key => $value) 
-                {
-                    $name=User::where('id',$value['customer_id'])->first()->name;
-                    
-                    if(!in_array($st->date,$array1))
+            foreach ($plannedPayments as $st) {
+                $planned=PlannedPayment::where('date',$st->date)->get()->toArray();
+                    //dump($planned);
+                    foreach($planned as $key => $value) 
                     {
-                        array_push($array1,$st->date);
-                    }
-                    else
-                    {
-                        $st->date='';
-                        $st->amount='';
-                    }
-                    fputcsv($handle, [
-                        'CSV File',
-                        $st->date,
-                        $st->amount,
-                        $name,
-                        $value['amount'],
-                    ]);             
-                }   
-        }     
-        
-        fclose($handle);
+                        $count +=1;
+                        $name=User::where('id',$value['customer_id'])->first()->name;
+                        $user_an=User::where('id',$value['customer_id'])->first()->account_number;
+                        $user_atn=User::where('id',$value['customer_id'])->first()->athority_number;
+                        
+                        if(!in_array($st->date,$array1))
+                        {
+                            array_push($array1,$st->date);
+                        }
+                        else
+                        {
+                            $st->date='';
+                            $st->amount='';
+                        }
+                        fputcsv($handle, [
+                            2,
+                            $user_an,
+                            00,
+                            $st->date,
+                            $value['amount'],
+                            $name,
+                            $user_atn,
+                            'Monthly DD',
+                            '',
+                            'ACME INC',
+                            '',
+                            'Monthly DD',
+                            "",
+                        ]);     
+                        $total += $value['amount'];        
+                    }   
+            }     
+            fputcsv($handle, [
+                3,
+                Setting::where('name','Debit_Authority_Number')->first()->value,
+                $count,
+                '',
+                $total,
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+            ]);
+            fclose($handle);
 
-        //download command
-        return Response::download($filename, "download.csv", $headers);
+            //download command
+            return Response::download($filename, "download.csv", $headers);
+    }
+
+    public function getplannedcsvFormByDate(Request $request)
+    {
+        if($request->date == null)
+        {
+            return back()->with('status','Please Select Date');
+        }
+        else
+        {
+            $headers = array(
+                'Content-Type' => 'application/vnd.ms-excel; charset=utf-8',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Content-Disposition' => 'attachment; filename=download.csv',
+                'Expires' => '0',
+                'Pragma' => 'public',
+            );
+
+            //I am storing the csv file in public >> files folder. So that why I am creating files folder
+            if (!File::exists(public_path()."/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            //creating the download file
+            $filename =  public_path("files/download.csv");
+            $handle = fopen($filename, 'w');
+
+            //adding the first row
+            fputcsv($handle, [
+                "Record Type ",
+                "Other Party Bank Account Number",
+                'Transaction code',
+                'Transaction Date',
+                'Transaction Amount',
+                'Other Party Name',
+                'Other Party Code',
+                'Other Party Reference',
+                'Other Party Alpha Reference',
+                'Your Name',
+                'Your Code',
+                'Your Reference',
+                'Your Particulars',
+            ]);
+            fputcsv($handle, [
+                1,
+                '',
+                '',
+                '',
+                '',
+                Setting::where('name','Debit_Authority_Number')->first()->value,
+                6,
+                50929,
+                '50923',
+                 '',
+                 Setting::where('name','Debit_Authority_Number')->first()->value,
+                 '',
+                 '',
+            ]);
+            $total =0;
+            $count =0;
+            //adding the data from the array
+            
+            $plannedPayments= DB::table('planned_payments')->select(DB::raw('sum(amount) as amount'),'date')
+            ->groupBy('date')->orderBy('date','desc')->where('date',$request->date)->get()->toArray();
+            //dump($plannedPayments);
+            $array1 =array();
+            foreach ($plannedPayments as $st) {
+                $planned=PlannedPayment::where('date',$st->date)->get()->toArray();
+                    //dump($planned);
+                    foreach($planned as $key => $value) 
+                    {
+                        $count +=1;
+                        $name=User::where('id',$value['customer_id'])->first()->name;
+                        $user_an=User::where('id',$value['customer_id'])->first()->account_number;
+                        $user_atn=User::where('id',$value['customer_id'])->first()->athority_number;
+                        
+                        if(!in_array($st->date,$array1))
+                        {
+                            array_push($array1,$st->date);
+                        }
+                        else
+                        {
+                            $st->date='';
+                            $st->amount='';
+                        }
+                        fputcsv($handle, [
+                            2,
+                            $user_an,
+                            00,
+                            $st->date,
+                            $value['amount'],
+                            $name,
+                            $user_atn,
+                            'Monthly DD',
+                            '',
+                            'ACME INC',
+                            '',
+                            'Monthly DD',
+                            "",
+                        ]);     
+                        $total += $value['amount'];        
+                    }   
+            }     
+            fputcsv($handle, [
+                3,
+                Setting::where('name','Debit_Authority_Number')->first()->value,
+                $count,
+                '',
+                $total,
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+            ]);
+            fclose($handle);
+
+            //download command
+            return Response::download($filename, "download.csv", $headers);
+        }
     }
 }
